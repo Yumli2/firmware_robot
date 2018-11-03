@@ -432,7 +432,7 @@ void executaPrograma(int ponteiro) {
     }
     int j=0;
     for(int i=quantidNumericas;i>0;i--){
-      novoParametro = novoParametro + (EEPROM.read(ponteiro+i) * pow(10,j)); //transforma as peças numéricas em um parâmetro novo
+      novoParametro = novoParametro + (EEPROM.read(ponteiro+64+i) * potencia(10,j)); //transforma as peças numéricas em um parâmetro novo
       j++;
     }
     tempMsg  = "executaPrograma() Instrução ";
