@@ -8,12 +8,20 @@
  * O loop dessa chamada está na função loop(), e é feita a cada passar da variável passo. Esta inicia alta (50) mas é diminuida 
  * até o valor 4 gradativamente, para implementar a aceleração e desaceleração do robô (mais precisão no movimento).
  * Os botões também podem ser usados para operar: 
- * [Rec/Stop] Toque curto inicia gravação de programa no endereço A da memória. Com o robô em movimento, este botão vira STOP.
- * [A] Toque curto executa programa no endereço A. Toque longo grava no endereço A.
- * [B] Toque curto executa programa no endereço B. Toque longo grava no endereço B.
- * [C] Toque curto executa programa no endereço C. Toque longo grava no endereço C.
- * [D] Toque curto executa programa no endereço D. Toque longo grava no endereço D.
- * [E] Toque curto executa programa no endereço E. Toque longo grava no endereço E.
+ * [D] [E] [C] [A] [N] [O]
+ * 
+ * [O]  - Inicia gravação de programa no endereço D da memória. Com o robô em movimento, este botão vira STOP.
+ *      - Toque longo formata a memória
+ * [N]  - Toque curto executa programa no endereço N.
+ *      - Toque longo grava no endereço N.
+ * [A]  - Toque curto executa programa no endereço B. 
+ *      - Toque longo grava no endereço A.
+ * [C]  - Toque curto executa programa no endereço C. 
+ *      - Toque longo grava no endereço C.
+ * [E]  - Toque curto executa programa no endereço D. 
+ *      - Toque longo grava no endereço E.
+ * [D]  - Toque curto executa programa no endereço E. 
+ *      - Toque longo faz o DUMP da memória na porta serial
  * 
  * Todos os programas estão gravados na EEPROM, em 128 bytes de espaço. Os 64 primeiros são os comandos, os 64 seguintes são parâmetros.
  * Ao gravar um novo programa, ele é colocado nos vetores programa[] e parametro[] na memória RAM, e só no final é gravado na EEPROM.
@@ -145,7 +153,7 @@ void setup() {
   digitalWrite(latchPin, LOW);
   shiftOut(dataPin, clockPin, MSBFIRST, B00000000); //envia resultado binário para o shift register
   digitalWrite(latchPin, HIGH);
-  gravaProgramadaEeprom(0);
+  gravaProgramaNaEeprom(0);
   somInicio();
 }
 
@@ -170,7 +178,7 @@ void loop() {
     medeDistancia();
   }
   if((millisAtual%3000==0)&&!executando&&caminhando){
-    bipeFino();
+    bipeFino(); //emite um bipe fino de 3 em 3 segundos informando que está gravando peças na memória
   }
   if(millisAtual%50==0){
     leBotao();
@@ -227,7 +235,7 @@ void leBotao() {
         if(executando) {
           erro();
         } else {
-          enderecoEepromGravacao = 0;
+          enderecoEepromGravacao = 512;
           iniciaGravacaoProgramaRAM();
         }
       } else if(ultimoValorBotoes < 761) {
@@ -271,8 +279,9 @@ void leBotao() {
       if(ultimoValorBotoes<709) {
         //botão grava/para
         mensagemDebug("Pressionado botão gravar/parar no toque longo"); 
-        enderecoEepromGravacao = 0;
-        iniciaGravacaoProgramaRAM();
+        //enderecoEepromGravacao = 0;
+        //iniciaGravacaoProgramaRAM();
+        apagaEeprom();
       } else if(ultimoValorBotoes < 761) {
         //botão A
         mensagemDebug("Pressionado botão A"); 
@@ -296,11 +305,9 @@ void leBotao() {
       } else {
         //botão E
         mensagemDebug("Pressionado botão E"); 
-        /*
-        enderecoEepromGravacao = 512;
-        iniciaGravacaoProgramaRAM();
-        */
-        apagaEeprom();
+        //enderecoEepromGravacao = 512;
+        //iniciaGravacaoProgramaRAM();
+        debugEeprom();
       }
     }
   }
@@ -317,13 +324,15 @@ void carregaProgramadaEeprom(int enderecoInicial) {
   Serial.println("Carregado!");
 }
 
-void gravaProgramadaEeprom(int enderecoInicial) {
+void gravaProgramaNaEeprom(int enderecoInicial) {
+  debugRam();
   mensagemDebug("Salvando programa para EEPROM");
-  for(int i=enderecoInicial;i<enderecoInicial+64;i++){
-    EEPROM.write(i, programa[i]);
-    EEPROM.write(i+64, parametros[i]);
+  for(int i=0;i<64;i++){
+    EEPROM.write(i+enderecoInicial, programa[i]);
+    EEPROM.write(i+64+enderecoInicial, parametros[i]);
     Serial.print(i);
-    Serial.print("-");
+    Serial.println("|");
+    //if(cmd==2) break;
   }
   somGravando();
   Serial.println("Gravado!");
@@ -331,13 +340,41 @@ void gravaProgramadaEeprom(int enderecoInicial) {
 
 void apagaEeprom() {
   //apaga EEPROM
+  somGravando();
   mensagemDebug("Apagando EEPROM");
   for(int i=0;i<1024;i++){
     EEPROM.write(i, 0);
   }
-  somGravando();
+  for(int i=0;i<1024;i=i+128){
+    EEPROM.write(i, 2);
+  }
+  somAfirmativo();
   Serial.println("Apagado!");
 }
+
+void debugEeprom() {
+  mensagemDebug("Dump da EEPROM para Debug:");
+  for(int i=0;i<1024;i++){
+    if(i%128==0) Serial.println("- - - - - -");
+    Serial.print(i);
+    Serial.print("->");
+    Serial.println(EEPROM.read(i));
+  }
+  somAfirmativo();
+}
+
+void debugRam() {
+  mensagemDebug("Dump da RAM para Debug:");
+  for(int i=0;i<64;i++){
+    Serial.print(i);
+    Serial.print("->");
+    Serial.print(programa[i]);
+    Serial.print(":");
+    Serial.println(parametros[i]);
+  }
+  somAfirmativo();
+}
+
 void leRfid() {
   //Códigos de leitura do RFID
   //Se não houver tag, não faz nada.
@@ -363,13 +400,13 @@ void leRfid() {
   }
   if(instrucao==2){ //Se a instrução for 2-parar, ele para a gravação. 
     if(!executando) {
-      gravaProgramadaEeprom(enderecoEepromGravacao); //grava o programa no endereço EEPROM dado. 
+      gravaProgramaNaEeprom(enderecoEepromGravacao); //grava o programa no endereço EEPROM dado. 
     }
     fim();
     return;
   } 
   if(instrucao==3){ //Se a instrução for 3-play, executa.
-    carregaProgramadaEeprom(0);
+    //carregaProgramadaEeprom(0);
     executando = true;
     executaPrograma(0);
   } else {
@@ -395,7 +432,7 @@ void iniciaGravacaoProgramaRAM() {
   caminhando = true;
   executando = false;
   ponteiro = 0;
-  for(int i = 0;i<64;i++){ //apaga programa anterior
+  for(int i = 0;i<64;i++){ //apaga programa anterior da RAM
     programa[i] = 2;
     parametros[i] = 0;
   }
