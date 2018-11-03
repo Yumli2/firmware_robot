@@ -110,7 +110,8 @@ int programa[64] = {3, 10, 8, 4, 5, 9, 11, 5, 4, 6, 2};
 int parametros[64] = {0, 0, 4, 0, 0, 0, 0, 45, 7, 45, 0}; //vetor dos parâmetros
 //int programa[64];
 //int parametros[64];
-int ponteirosRepetir[4]; //vetor que armazena os ponteiros de repetição
+int ponteirosRepetir[7]; //vetor que armazena os ponteiros de repetição
+int repeticaoAninhada = 0; //marca o uso de repetições dentro de repetições;
 int ponteiro = 0; //ponteiro indicando em que passo está do programa
 int passo = 50; //milissegundos entre cada instrução de movimento.
 int setDistanciaBasica = 10; //distancia básica de movimento do robô em linha reta
@@ -521,25 +522,29 @@ void executaInstrucao(int instrucao,int parametro){
       passo = parametro*1000;
       break;
     case 8: //repetir
+      repeticaoAninhada++;
       if(parametro==0) parametro=1; //se o usuário não colocar um número após a peça repetir, ele executa a rotina uma vez.
-      ponteirosRepetir[0] = ponteiro; //array impar que guarda o ponteiro que marca o repetir, afim do código poder voltar à instrução.
-      ponteirosRepetir[1] = parametro; //array par que guarda o contador do for.
+      ponteirosRepetir[repeticaoAninhada] = ponteiro; //array impar que guarda o ponteiro que marca o repetir, afim do código poder voltar à instrução.
+      ponteirosRepetir[repeticaoAninhada+3] = parametro; //array par que guarda o contador do for.
       if(true){ 
-        tempMsg  = "Repetindo o bloco ";
-        tempMsg.concat(ponteirosRepetir[1]);
+        tempMsg  = "Bloco ";
+        tempMsg.concat(repeticaoAninhada);
+        tempMsg  = " repetindo ";
+        tempMsg.concat(ponteirosRepetir[repeticaoAninhada+3]);
         tempMsg.concat(" vezes...");
         mensagemDebug(tempMsg);
       }
       break;
     case 9: //fim repetir
-      ponteirosRepetir[1]= ponteirosRepetir[1] - 1;
-      if(ponteirosRepetir[1]>0){ 
-        ponteiro = ponteirosRepetir[0];
+      ponteirosRepetir[repeticaoAninhada+3]--;
+      if(ponteirosRepetir[repeticaoAninhada+3]>0){ 
+        ponteiro = ponteirosRepetir[repeticaoAninhada];
         tempMsg  = "Repetição nº ";
-        tempMsg.concat(ponteirosRepetir[1]);
+        tempMsg.concat(ponteirosRepetir[repeticaoAninhada+3]);
         mensagemDebug(tempMsg);
       } else {
         mensagemDebug("Fim do repetir.");
+        repeticaoAninhada--;
       }
       break;
     case 10: //desce caneta
