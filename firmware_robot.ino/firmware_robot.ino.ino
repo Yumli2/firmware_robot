@@ -663,13 +663,13 @@ void esquerda(int direcao) {
       binarioEsq = B10010000;
       break;
     case 2:
-      binarioEsq = B11000000;
+      binarioEsq = B00110000;
       break;
     case 3:
       binarioEsq = B01100000;
       break;
     case 4:
-      binarioEsq = B00110000;
+      binarioEsq = B11000000;
       break;
     /*
     case 5:
@@ -715,13 +715,13 @@ void direita(int direcao) {
       binarioDir = B00001100;
       break;
     case 3:
-      binarioDir = B00000110;
+      binarioDir = B00001001;
       break;
     case 2:
       binarioDir = B00000011;
       break;
     case 1:
-      binarioDir = B00001001;
+      binarioDir = B00000110;
       break;
   }
 }
