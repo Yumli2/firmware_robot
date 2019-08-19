@@ -69,7 +69,7 @@
 #include <Servo.h>
 
 //pinos da shield
-int servo = 19;
+int servo = 16;
 int sck = 13; //SPI
 int miso = 12; //SPI
 int mosi = 11; //SPI
@@ -129,6 +129,7 @@ long timerBotao = 0;
 long timerLongoPressionar = 1000;
 int enderecoEepromGravacao = 0;
 int distanciaUltrassom = 150; //distância medida pelo ultrassom
+int limiteUltrassom = 10;
 int raio = 10; //variável raio para comando curvas
 byte binarioDir = B00000000;
 byte binarioEsq = B00000000;
@@ -137,6 +138,9 @@ int canetaAcima = 65;
 int canetaAbaixo = 100;
 String entradaString = "";         // String para recebe3r dados seriais
 boolean stringCompleta = false;  // marca se a string está completa
+boolean rfidAlwaysOn = true; //define se o RFID estará funcinando ao executar códigos
+boolean invertLeftMotor = true;
+boolean invertRightMotor = true;
 
 void setup() {
   Serial.begin(9600);
@@ -174,8 +178,10 @@ void loop() {
   }
   if(millisAtual%1000==0){
     //De um em um segundo lê o RFID e mede a distância
-    mensagemDebug("Lendo RFID...");
-    leRfid();
+    if(!executando||rfidAlwaysOn){
+      mensagemDebug("Lendo RFID...");
+      leRfid();
+    }
     medeDistancia();
   }
   if((millisAtual%3000==0)&&!executando&&caminhando){
@@ -600,8 +606,8 @@ void fim(){
 
 void medeDistancia(){
   //Mede distância na frente do robô com o sensor ultrasom
-  //distanciaUltrassom = ultrasonic.distanceRead();
-  if(distanciaUltrassom < 5){
+  distanciaUltrassom = ultrasonic.distanceRead();
+  if(distanciaUltrassom < limiteUltrassom){
     mensagemDebug("Parada por sensor de distância");
     erro();
     fim();
@@ -663,13 +669,25 @@ void esquerda(int direcao) {
       binarioEsq = B10010000;
       break;
     case 2:
-      binarioEsq = B00110000;
+      if(invertLeftMotor) {
+        binarioEsq = B11000000;
+      } else {
+        binarioEsq = B00110000;
+      }
       break;
     case 3:
-      binarioEsq = B01100000;
+      if(invertLeftMotor) {
+        binarioEsq = B01100000;
+      } else {
+        binarioEsq = B01100000;
+      }
       break;
     case 4:
-      binarioEsq = B11000000;
+      if(invertLeftMotor) {
+        binarioEsq = B00110000;
+      } else {
+        binarioEsq = B11000000;
+      }
       break;
     /*
     case 5:
@@ -715,13 +733,25 @@ void direita(int direcao) {
       binarioDir = B00001100;
       break;
     case 3:
-      binarioDir = B00001001;
+      if(invertRightMotor) {
+        binarioDir = B00000110;
+      } else {
+        binarioDir = B00001001;
+      }
       break;
     case 2:
-      binarioDir = B00000011;
+      if(invertRightMotor) {
+        binarioDir = B00000011;
+      } else {
+        binarioDir = B00000011;
+      }
       break;
     case 1:
-      binarioDir = B00000110;
+      if(invertRightMotor) {
+        binarioDir = B00001001;
+      } else {
+        binarioDir = B00000110;
+      }
       break;
   }
 }
