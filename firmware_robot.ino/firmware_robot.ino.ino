@@ -166,11 +166,12 @@ void setup() {
   shiftOut(dataPin, clockPin, MSBFIRST, B00000000); //envia resultado binário para o shift register
   digitalWrite(latchPin, HIGH);
   gravaProgramaNaEeprom(0);
+  digitalWrite(led, LOW);
   somInicio();
+  digitalWrite(led, HIGH);
 }
 
 void loop() {
-  leds = 0 | (ledN << 1) | (ledA << 2) | (ledC << 3) | (ledE << 4) | (ledPlay << 5) | (ledRec << 6) | (0 << 7); 
   millisAtual = millis();
   //A cada tempo do passo, execute
   if(millisAtual - millisAnterior >= passo) {
@@ -182,6 +183,12 @@ void loop() {
         ponteiro++;
         executaPrograma(ponteiro);
       }
+      leds = 0 | (ledN << 1) | (ledA << 2) | (ledC << 3) | (ledE << 4) | (ledPlay << 5) | (ledRec << 6) | (0 << 7); 
+      //mostra status leds
+      digitalWrite(latchPin, LOW);
+      shiftOut(dataPin, clockPin, MSBFIRST, leds);
+      shiftOut(dataPin, clockPin, MSBFIRST, B00000000); //desliga os coilers dos motores para não esquentar
+      digitalWrite(latchPin, HIGH);
     }
   }
   if(millisAtual%1000==0){
@@ -247,6 +254,7 @@ void leBotao() {
       if(ultimoValorBotoes<709) {
         //botão grava/para
         mensagemDebug("Pressionado botão gravar/parar no toque curto"); 
+        ledRec = true;
         if(executando) {
           erro();
         } else {
@@ -469,9 +477,10 @@ void gravaInstrucao(int instrucao,int parametro){
 }
 
 void executaPrograma(int ponteiro) {
+  leds = 0 | (ledN << 1) | (ledA << 2) | (ledC << 3) | (ledE << 4) | (ledPlay << 5) | (ledRec << 6) | (0 << 7); 
   digitalWrite(latchPin, LOW);
   shiftOut(dataPin, clockPin, MSBFIRST, leds);
-  shiftOut(dataPin, clockPin, MSBFIRST, binarioEsq | binarioDir ); //envia resultado binário para o shift register
+  shiftOut(dataPin, clockPin, MSBFIRST, B00000000 );
   digitalWrite(latchPin, HIGH);
   int comando = EEPROM.read(ponteiro);
   int parametro = EEPROM.read(ponteiro + 64);
@@ -626,6 +635,7 @@ void fim(){
   shiftOut(dataPin, clockPin, MSBFIRST, leds);
   shiftOut(dataPin, clockPin, MSBFIRST, B00000000); //desliga os coilers dos motores para não esquentar
   digitalWrite(latchPin, HIGH);
+  digitalWrite(led, HIGH);
   myservo.write(canetaAcima);
 }
 
