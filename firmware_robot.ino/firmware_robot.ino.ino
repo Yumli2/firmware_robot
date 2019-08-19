@@ -113,7 +113,7 @@ int parametros[64] = {0, 0, 4, 0, 0, 0, 0, 45, 7, 45, 0}; //vetor dos parâmetro
 int ponteirosRepetir[7]; //vetor que armazena os ponteiros de repetição
 int repeticaoAninhada = 0; //marca o uso de repetições dentro de repetições;
 int ponteiro = 0; //ponteiro indicando em que passo está do programa
-int passo = 50; //milissegundos entre cada instrução de movimento.
+int passo = 3; //milissegundos entre cada instrução de movimento.
 int setDistanciaBasica = 10; //distancia básica de movimento do robô em linha reta
 int passosCaminhar = 0; //quantidade de passos que o robô deve percorrer até a próxima instrução.
 int passosCurva = 0; //quantidade de passos em curvas
@@ -138,7 +138,7 @@ int canetaAcima = 65;
 int canetaAbaixo = 100;
 String entradaString = "";         // String para recebe3r dados seriais
 boolean stringCompleta = false;  // marca se a string está completa
-boolean rfidAlwaysOn = true; //define se o RFID estará funcinando ao executar códigos
+boolean rfidAlwaysOn = false; //define se o RFID estará funcinando ao executar códigos
 boolean invertLeftMotor = true;
 boolean invertRightMotor = true;
 
@@ -592,7 +592,7 @@ void executaInstrucao(int instrucao,int parametro){
 
 void fim(){
   mensagemDebug("fim() Fim de execução.");
-  passo = 50;
+  //passo = 50;
   passosCaminhar = 0;
   grausGirar = 0;
   caminhando = false;
@@ -625,12 +625,13 @@ void caminhar(){
     }
     direita(1);
     esquerda(1);
+    /*
     if(passosCaminhar>50){ //acelera e freia o passo
       passo = round(passo*0.90);
       if(passo<3) passo=3;
     } else {
       passo = passo + 1;
-    }
+    }*/
     passosCaminhar--;
     if(passosCaminhar==0 && executando==false) erro(); //se o robô andou buscando peças até acabar os passos, significa que ele não achou a peça final, o que é um erro.
   } else if(grausGirar!=0){
@@ -650,7 +651,7 @@ void caminhar(){
     curva();
   } else {
     caminhando = false;
-    passo = 50;
+    //passo = 50;
   }
   shiftOut(dataPin, clockPin, MSBFIRST, binarioEsq | binarioDir ); //envia resultado binário para o shift register
   digitalWrite(latchPin, HIGH);
@@ -766,12 +767,13 @@ void girar(){
     esquerda(1); 
     grausGirar++;
   }
+  /*
   if((grausGirar>50)or(grausGirar<50)){ //acelera e freia o passo
     passo = round(passo*0.90);
     if(passo<6) passo=6;
   } else {
     passo = passo + 1;
-  }
+  }*/
   if(grausGirar == 0) caminhando = false;
 }
 
