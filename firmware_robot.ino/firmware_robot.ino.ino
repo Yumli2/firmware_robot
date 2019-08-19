@@ -106,8 +106,8 @@ unsigned long millisAtual = 0;
 boolean caminhando = false; //define se o robô está em movimento ou não
 //boolean gravando = false; //define se o robô está gravando comandos ou não.
 boolean executando = false; //define se o robô está executando comandos ou não.
-int programa[64] = {3, 10, 8, 4, 5, 9, 11, 5, 4, 6, 2};
-int parametros[64] = {0, 0, 4, 0, 0, 0, 0, 45, 7, 45, 0}; //vetor dos parâmetros
+int programa[64] = {3, 10, 8, 4, 5, 9, 11, 5, 4, 6, 10, 8, 4, 5, 9, 11, 5, 4, 6, 2};
+int parametros[64] = {0, 0, 4, 0, 0, 0, 0, 17, 5, 14, 0, 24, 1, 15, 0, 0, 0, 4, 95, 0}; //vetor dos parâmetros
 //int programa[64];
 //int parametros[64];
 int ponteirosRepetir[7]; //vetor que armazena os ponteiros de repetição
@@ -141,6 +141,13 @@ boolean stringCompleta = false;  // marca se a string está completa
 boolean rfidAlwaysOn = false; //define se o RFID estará funcinando ao executar códigos
 boolean invertLeftMotor = true;
 boolean invertRightMotor = true;
+boolean ledPlay = false;
+boolean ledE = false;
+boolean ledC = false;
+boolean ledA = false;
+boolean ledN = false;
+boolean ledRec = false;
+int leds;
 
 void setup() {
   Serial.begin(9600);
@@ -163,6 +170,7 @@ void setup() {
 }
 
 void loop() {
+  leds = 0 | (ledN << 1) | (ledA << 2) | (ledC << 3) | (ledE << 4) | (ledPlay << 5) | (ledRec << 6) | (0 << 7); 
   millisAtual = millis();
   //A cada tempo do passo, execute
   if(millisAtual - millisAnterior >= passo) {
@@ -247,14 +255,16 @@ void leBotao() {
         }
       } else if(ultimoValorBotoes < 761) {
         //botão A
-        mensagemDebug("Pressionado botão A"); 
+        mensagemDebug("Pressionado botão N");
+        ledN = true;
         //carregaProgramadaEeprom(0);
         ponteiro = 0;
         executando = true;
         executaPrograma(ponteiro);
       } else if(ultimoValorBotoes < 822) {
         //botão B
-        mensagemDebug("Pressionado botão B"); 
+        mensagemDebug("Pressionado botão A"); 
+        ledA = true;
         //carregaProgramadaEeprom(128); //está resetando o arduino
         ponteiro = 128;
         executando = true;
@@ -262,20 +272,23 @@ void leBotao() {
       } else if(ultimoValorBotoes < 894) {
         //botão C
         mensagemDebug("Pressionado botão C"); 
+        ledC = true;
         //carregaProgramadaEeprom(256);
         ponteiro = 256;
         executando = true;
         executaPrograma(ponteiro);
       } else if(ultimoValorBotoes < 977) {
         //botão D
-        mensagemDebug("Pressionado botão D"); 
+        mensagemDebug("Pressionado botão E"); 
+        ledE = true;
         //carregaProgramadaEeprom(384);
         ponteiro = 384;
         executando = true;
         executaPrograma(ponteiro);
       } else {
         //botão E
-        mensagemDebug("Pressionado botão E"); 
+        mensagemDebug("Pressionado botão Play"); 
+        ledPlay = true;
         //carregaProgramadaEeprom(512); //está resetando o arduino
         ponteiro = 512;
         executando = true;
@@ -456,6 +469,10 @@ void gravaInstrucao(int instrucao,int parametro){
 }
 
 void executaPrograma(int ponteiro) {
+  digitalWrite(latchPin, LOW);
+  shiftOut(dataPin, clockPin, MSBFIRST, leds);
+  shiftOut(dataPin, clockPin, MSBFIRST, binarioEsq | binarioDir ); //envia resultado binário para o shift register
+  digitalWrite(latchPin, HIGH);
   int comando = EEPROM.read(ponteiro);
   int parametro = EEPROM.read(ponteiro + 64);
   tempMsg  = "executaPrograma() ";
@@ -597,8 +614,16 @@ void fim(){
   grausGirar = 0;
   caminhando = false;
   executando = false;
+  ledPlay = false;
+  ledE = false;
+  ledC = false;
+  ledA = false;
+  ledN = false;
+  ledRec = false;
+  leds = 0 | (ledN << 1) | (ledA << 2) | (ledC << 3) | (ledE << 4) | (ledPlay << 5) | (ledRec << 6) | (0 << 7); 
   ponteiro = 0;
   digitalWrite(latchPin, LOW);
+  shiftOut(dataPin, clockPin, MSBFIRST, leds);
   shiftOut(dataPin, clockPin, MSBFIRST, B00000000); //desliga os coilers dos motores para não esquentar
   digitalWrite(latchPin, HIGH);
   myservo.write(canetaAcima);
@@ -653,6 +678,7 @@ void caminhar(){
     caminhando = false;
     //passo = 50;
   }
+  shiftOut(dataPin, clockPin, MSBFIRST, leds);
   shiftOut(dataPin, clockPin, MSBFIRST, binarioEsq | binarioDir ); //envia resultado binário para o shift register
   digitalWrite(latchPin, HIGH);
 }
