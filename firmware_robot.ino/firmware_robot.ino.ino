@@ -14,14 +14,14 @@
  *      - Toque longo formata a memória
  * [N]  - Toque curto executa programa no endereço N.
  *      - Toque longo grava no endereço N.
- * [A]  - Toque curto executa programa no endereço B. 
+ * [A]  - Toque curto executa programa no endereço A. 
  *      - Toque longo grava no endereço A.
  * [C]  - Toque curto executa programa no endereço C. 
  *      - Toque longo grava no endereço C.
- * [E]  - Toque curto executa programa no endereço D. 
+ * [E]  - Toque curto executa programa no endereço E. 
  *      - Toque longo grava no endereço E.
- * [D]  - Toque curto executa programa no endereço E. 
- *      - Toque longo faz o DUMP da memória na porta serial
+ * [D]  - Toque curto executa programa no endereço Play. 
+ *      - Toque longo executa o programa de calibração padrão.
  * 
  * Todos os programas estão gravados na EEPROM, em 128 bytes de espaço. Os 64 primeiros são os comandos, os 64 seguintes são parâmetros.
  * Ao gravar um novo programa, ele é colocado nos vetores programa[] e parametro[] na memória RAM, e só no final é gravado na EEPROM.
@@ -106,10 +106,10 @@ unsigned long millisAtual = 0;
 boolean caminhando = false; //define se o robô está em movimento ou não
 //boolean gravando = false; //define se o robô está gravando comandos ou não.
 boolean executando = false; //define se o robô está executando comandos ou não.
-int programa[64] = {3, 10, 8, 4, 5, 9, 11, 5, 4, 6, 10, 8, 4, 5, 9, 11, 5, 4, 6, 2};
-int parametros[64] = {0, 0, 4, 0, 0, 0, 0, 17, 5, 14, 0, 24, 1, 15, 0, 0, 0, 4, 95, 0}; //vetor dos parâmetros
-//int programa[64];
-//int parametros[64];
+int programa[64];
+int parametros[64]; //vetor dos parâmetros
+const int calibProg[] = {3, 10, 8, 4, 5, 9, 11, 5, 4, 6, 10, 8, 4, 5, 9, 11, 5, 4, 6, 2};
+const int calibParam[] = {0, 0, 4, 0, 0, 0, 0, 17, 5, 14, 0, 24, 1, 15, 0, 0, 0, 4, 95, 0}; 
 int ponteirosRepetir[7]; //vetor que armazena os ponteiros de repetição
 int repeticaoAninhada = 0; //marca o uso de repetições dentro de repetições;
 int ponteiro = 0; //ponteiro indicando em que passo está do programa
@@ -139,8 +139,8 @@ int canetaAbaixo = 100;
 String entradaString = "";         // String para receber dados seriais
 boolean stringCompleta = false;  // marca se a string está completa
 boolean rfidAlwaysOn = false; //define se o RFID estará funcinando ao executar códigos
-boolean invertLeftMotor = true;
-boolean invertRightMotor = true;
+boolean invertLeftMotor = false;
+boolean invertRightMotor = false;
 boolean ledPlay = false;
 boolean ledE = false;
 boolean ledC = false;
@@ -165,7 +165,7 @@ void setup() {
   digitalWrite(latchPin, LOW);
   shiftOut(dataPin, clockPin, MSBFIRST, B00000000); //envia resultado binário para o shift register
   digitalWrite(latchPin, HIGH);
-  gravaProgramaNaEeprom(0);
+  //gravaProgramaNaEeprom(0); //apaga o bloco inicial
   digitalWrite(led, LOW);
   somInicio();
   digitalWrite(led, HIGH);
@@ -311,13 +311,13 @@ void leBotao() {
         //iniciaGravacaoProgramaRAM();
         apagaEeprom();
       } else if(ultimoValorBotoes < 761) {
-        //botão A
-        mensagemDebug(F("Press  botão A")); 
+        //botão N
+        mensagemDebug(F("Press  botão N")); 
         enderecoEepromGravacao = 0;
         iniciaGravacaoProgramaRAM();
       } else if(ultimoValorBotoes < 822) {
-        //botão B
-        mensagemDebug(F("Press  botão B")); 
+        //botão A
+        mensagemDebug(F("Press  botão A")); 
         enderecoEepromGravacao = 128;
         iniciaGravacaoProgramaRAM();
       } else if(ultimoValorBotoes < 894) {
@@ -326,19 +326,30 @@ void leBotao() {
         enderecoEepromGravacao = 256;
         iniciaGravacaoProgramaRAM();
       } else if(ultimoValorBotoes < 977) {
-        //botão D
-        mensagemDebug(F("Press  botão D")); 
+        //botão E
+        mensagemDebug(F("Press  botão E")); 
         enderecoEepromGravacao = 384;
         iniciaGravacaoProgramaRAM();
       } else {
-        //botão E
-        mensagemDebug(F("Press  botão E")); 
+        //botão Pyay
+        mensagemDebug(F("Press  botão D")); 
         //enderecoEepromGravacao = 512;
         //iniciaGravacaoProgramaRAM();
         debugEeprom();
       }
     }
   }
+}
+
+void calibracao() {
+  mensagemDebug(F("Carregando código de calibração"));
+  for(int i=0;i<sizeof(calibProg)/sizeof(int);i++){
+    programa[i] = calibProg[i];
+    parametros[i] = calibParam[i];
+    Serial.print(i);
+    Serial.print("-");
+  }
+  Serial.println(F(" comandos de calibração carregados no bloco E!"));
 }
 
 void carregaProgramadaEeprom(int enderecoInicial) {
@@ -353,39 +364,57 @@ void carregaProgramadaEeprom(int enderecoInicial) {
 }
 
 void gravaProgramaNaEeprom(int enderecoInicial) {
-  debugRam();
   mensagemDebug(F("Salvando programa para EEPROM"));
   for(int i=0;i<64;i++){
     EEPROM.write(i+enderecoInicial, programa[i]);
     EEPROM.write(i+64+enderecoInicial, parametros[i]);
     Serial.print(i);
-    Serial.println("|");
-    //if(cmd==2) break;
+    Serial.print("|");
+    if(cmd==2) break;
   }
   somGravando();
   mensagemDebug(F("Gravado!"));
 }
 
 void apagaEeprom() {
+  delay(1500);
   //apaga EEPROM
+  //espera 5 segundos até confirmar
+  Serial.println(F("memória EEPROM será apagada em 5 segundos! Desligue a alimentação para cancelar!"));
+  for(int i=0;i<30;i++){
+    if(i<20){
+      tone(buzzer, 494, 50);
+      delay(50);
+      noTone(buzzer);
+      delay(200);
+    } else {
+      tone(buzzer, 494, 50);
+      delay(25);
+      noTone(buzzer);
+      delay(100);
+    }
+    if(i%5==0) Serial.print(F("..."));
+  }
   somGravando();
-  mensagemDebug("Apagando EEPROM");
+  mensagemDebug(F("Apagando EEPROM"));
   for(int i=0;i<1024;i++){
     EEPROM.write(i, 0);
   }
   for(int i=0;i<1024;i=i+128){
     EEPROM.write(i, 2);
   }
-  somAfirmativo();
   mensagemDebug(F("Apagado!"));
+  calibracao();
+  gravaProgramaNaEeprom(384); //grava calibração no botão E (desenho)
+  somAfirmativo();
 }
 
 void debugEeprom() {
   mensagemDebug(F("Dump EEPROM p Debug:"));
   for(int i=0;i<1024;i++){
-    if(i%128==0) Serial.println("- - - - - -");
+    if(i%64==0) Serial.println("- - - - - -");
     Serial.print(i);
-    Serial.print("->");
+    Serial.print("\t");
     Serial.println(EEPROM.read(i));
   }
   somAfirmativo();
