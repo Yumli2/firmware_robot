@@ -67,6 +67,7 @@
 #include <Ultrasonic.h>
 #include <EEPROM.h>
 #include <Servo.h>
+#include <ArduinoUniqueID.h>
 
 //pinos da shield
 int servo = 16;
@@ -168,6 +169,7 @@ void setup() {
   //gravaProgramaNaEeprom(0); //apaga o bloco inicial
   digitalWrite(led, LOW);
   somInicio();
+  whoami();
   digitalWrite(led, HIGH);
 }
 
@@ -228,6 +230,10 @@ void serialEvent() {
       stringCompleta = true;
     }
   }
+}
+
+void whoami() {
+  UniqueIDdump(Serial);
 }
 
 void leBotao() {
@@ -638,6 +644,13 @@ void executaInstrucao(int instrucao,int parametro){
       tempMsg.concat("cm");
       mensagemDebug(tempMsg);
       break;
+    case 15: //who am I?
+      whoami();
+      mensagemDebug(tempMsg);
+      break;
+    case 16: //your name
+      yourNameIs(parametro);
+      break;
     default:
       mensagemDebug(F("executaInstrucao() peça desconhecida!"));
       erro();
@@ -666,6 +679,12 @@ void fim(){
   digitalWrite(latchPin, HIGH);
   digitalWrite(led, HIGH);
   myservo.write(canetaAcima);
+}
+
+void yourNameIs(int nome){
+  somGravando();
+  mensagemDebug(F("mudando nome para "));
+  Serial.println(nome);
 }
 
 void medeDistancia(){
