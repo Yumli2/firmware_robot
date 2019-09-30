@@ -149,6 +149,8 @@ boolean ledA = false;
 boolean ledN = false;
 boolean ledRec = false;
 int leds;
+char decabotName[5] = "A01  ";                     //<<<--- put your robot name here!
+char decabotOwner[50] = "anybody@decabot.com";     //<<<--- put your e-mail here!
 
 void setup() {
   Serial.begin(9600);
@@ -212,7 +214,11 @@ void loop() {
   if (stringCompleta) {
     String t1 = entradaString.substring(0,entradaString.indexOf(":"));
     String t2 = entradaString.substring(entradaString.indexOf(":")+1);
-    executaInstrucao(t1.toInt(),t2.toInt());
+    if(t1 == "16"||t1 == "17") {
+      executaInstrucao(t1.toInt(),t2);
+    } else {
+      executaInstrucao(t1.toInt(),t2.toInt());
+    }
     // clear the string:
     entradaString = "";
     stringCompleta = false;
@@ -234,6 +240,16 @@ void serialEvent() {
 
 void whoami() {
   UniqueIDdump(Serial);
+  Serial.print(F("Decabot Name: "));
+  for(int i=896;i<=900;i++){
+    Serial.print((char) EEPROM.read(i));
+  }
+  Serial.println();
+  Serial.print(F("Decabot Owner: "));
+  for(int i=901;i<950;i++){
+    Serial.print((char) EEPROM.read(i));
+  }
+  Serial.println();
 }
 
 void leBotao() {
@@ -403,10 +419,10 @@ void apagaEeprom() {
   }
   somGravando();
   mensagemDebug(F("Apagando EEPROM"));
-  for(int i=0;i<1024;i++){
+  for(int i=0;i<896;i++){       //reserva o último bloco para dados que não são apagados
     EEPROM.write(i, 0);
   }
-  for(int i=0;i<1024;i=i+128){
+  for(int i=0;i<896;i=i+128){   //inicia os blocos sempre como parâmetro 2 de parada
     EEPROM.write(i, 2);
   }
   mensagemDebug(F("Apagado!"));
@@ -557,6 +573,21 @@ void executaPrograma(int ponteiro) {
   }
 }
 
+void executaInstrucao(int instrucao,String parametro){ //se o parâmetro for uma string
+  switch (instrucao) {
+    case 16: //your name
+      yourNameIs(parametro);
+      break;
+    case 17: //your name
+      yourOwnerIs(parametro);
+      break;
+    default:
+      mensagemDebug(F("executaInstrucao() peça desconhecida!"));
+      erro();
+      break;
+  }
+}
+
 void executaInstrucao(int instrucao,int parametro){
   switch (instrucao) {
     case 1:
@@ -681,10 +712,24 @@ void fim(){
   myservo.write(canetaAcima);
 }
 
-void yourNameIs(int nome){
+void yourNameIs(String parametro){
   somGravando();
-  mensagemDebug(F("mudando nome para "));
-  Serial.println(nome);
+  parametro.toCharArray(decabotName,6);
+  for(int i=0;i<=5;i++){
+    EEPROM.write(i + 896,decabotName[i]);
+  }
+  mensagemDebug(F("mudado nome para "));
+  Serial.println(decabotName);
+}
+
+void yourOwnerIs(String parametro){
+  somGravando();
+  parametro.toCharArray(decabotOwner,50);
+  for(int i=0;i<=50;i++){
+    EEPROM.write(i + 902,decabotOwner[i]);
+  }
+  mensagemDebug(F("Decabot owner: "));
+  Serial.println(decabotOwner);
 }
 
 void medeDistancia(){
