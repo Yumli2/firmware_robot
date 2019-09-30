@@ -370,7 +370,7 @@ void gravaProgramaNaEeprom(int enderecoInicial) {
     EEPROM.write(i+64+enderecoInicial, parametros[i]);
     Serial.print(i);
     Serial.print("|");
-    if(cmd==2) break;
+    if(programa[i]==2) break;
   }
   somGravando();
   mensagemDebug(F("Gravado!"));
