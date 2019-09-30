@@ -535,13 +535,6 @@ void executaPrograma(int ponteiro) {
   digitalWrite(latchPin, HIGH);
   int comando = EEPROM.read(ponteiro);
   int parametro = EEPROM.read(ponteiro + 64);
-  tempMsg  = F("executaPrograma() ");
-  tempMsg.concat(ponteiro);
-  tempMsg.concat("->");
-  tempMsg.concat(comando);
-  tempMsg.concat(":");
-  tempMsg.concat(parametro);
-  mensagemDebug(tempMsg);
   if(comando!=0) { //não executa numericos
     int ponteiroSeguinte = ponteiro + 1;
     int quantidNumericas = 0;
@@ -556,7 +549,7 @@ void executaPrograma(int ponteiro) {
       novoParametro = novoParametro + (EEPROM.read(ponteiro+64+i) * potencia(10,j)); //transforma as peças numéricas em um parâmetro novo
       j++;
     }
-    tempMsg  = F("executaPrograma() Instr ");
+    tempMsg  = F("executaPrograma() EEPROM ");
     tempMsg.concat(ponteiro);
     tempMsg.concat("-> ");
     tempMsg.concat(comando);
@@ -572,6 +565,7 @@ void executaPrograma(int ponteiro) {
     }
   }
 }
+
 
 void executaInstrucao(int instrucao,String parametro){ //se o parâmetro for uma string
   switch (instrucao) {
