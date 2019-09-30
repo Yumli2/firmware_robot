@@ -136,7 +136,7 @@ byte binarioEsq = B00000000;
 String tempMsg = ""; //variável temporária de mensagens para serial debug
 int canetaAcima = 65;
 int canetaAbaixo = 100;
-String entradaString = "";         // String para recebe3r dados seriais
+String entradaString = "";         // String para receber dados seriais
 boolean stringCompleta = false;  // marca se a string está completa
 boolean rfidAlwaysOn = false; //define se o RFID estará funcinando ao executar códigos
 boolean invertLeftMotor = true;
@@ -194,7 +194,7 @@ void loop() {
   if(millisAtual%1000==0){
     //De um em um segundo lê o RFID e mede a distância
     if(!executando||rfidAlwaysOn){
-      mensagemDebug("Lendo RFID...");
+      mensagemDebug(F("Lendo RFID..."));
       leRfid();
     }
     medeDistancia();
@@ -248,12 +248,12 @@ void leBotao() {
     digitalWrite(led, LOW);
     long timerAtual = millis();
     if(timerBotao + timerLongoPressionar > timerAtual){
-      mensagemDebug("Toque curto");
+      mensagemDebug(F("Toque curto"));
       //Serial.println(timerBotao);
       //Serial.println(valorBotao);
       if(ultimoValorBotoes<709) {
         //botão grava/para
-        mensagemDebug("Pressionado botão gravar/parar no toque curto"); 
+        mensagemDebug(F("Press  botão gravar/parar no toque curto")); 
         ledRec = true;
         if(executando) {
           erro();
@@ -263,7 +263,7 @@ void leBotao() {
         }
       } else if(ultimoValorBotoes < 761) {
         //botão A
-        mensagemDebug("Pressionado botão N");
+        mensagemDebug(F("Press  botão N"));
         ledN = true;
         //carregaProgramadaEeprom(0);
         ponteiro = 0;
@@ -271,7 +271,7 @@ void leBotao() {
         executaPrograma(ponteiro);
       } else if(ultimoValorBotoes < 822) {
         //botão B
-        mensagemDebug("Pressionado botão A"); 
+        mensagemDebug(F("Press  botão A")); 
         ledA = true;
         //carregaProgramadaEeprom(128); //está resetando o arduino
         ponteiro = 128;
@@ -279,7 +279,7 @@ void leBotao() {
         executaPrograma(ponteiro);
       } else if(ultimoValorBotoes < 894) {
         //botão C
-        mensagemDebug("Pressionado botão C"); 
+        mensagemDebug(F("Press  botão C")); 
         ledC = true;
         //carregaProgramadaEeprom(256);
         ponteiro = 256;
@@ -287,7 +287,7 @@ void leBotao() {
         executaPrograma(ponteiro);
       } else if(ultimoValorBotoes < 977) {
         //botão D
-        mensagemDebug("Pressionado botão E"); 
+        mensagemDebug(F("Press  botão E")); 
         ledE = true;
         //carregaProgramadaEeprom(384);
         ponteiro = 384;
@@ -295,7 +295,7 @@ void leBotao() {
         executaPrograma(ponteiro);
       } else {
         //botão E
-        mensagemDebug("Pressionado botão Play"); 
+        mensagemDebug(F("Press  botão Play")); 
         ledPlay = true;
         //carregaProgramadaEeprom(512); //está resetando o arduino
         ponteiro = 512;
@@ -303,36 +303,36 @@ void leBotao() {
         executaPrograma(ponteiro);
       }
     } else {
-      mensagemDebug("Toque longo");
+      mensagemDebug(F("Toque longo"));
       if(ultimoValorBotoes<709) {
         //botão grava/para
-        mensagemDebug("Pressionado botão gravar/parar no toque longo"); 
+        mensagemDebug(F("Press  botão gravar/parar no toque longo")); 
         //enderecoEepromGravacao = 0;
         //iniciaGravacaoProgramaRAM();
         apagaEeprom();
       } else if(ultimoValorBotoes < 761) {
         //botão A
-        mensagemDebug("Pressionado botão A"); 
+        mensagemDebug(F("Press  botão A")); 
         enderecoEepromGravacao = 0;
         iniciaGravacaoProgramaRAM();
       } else if(ultimoValorBotoes < 822) {
         //botão B
-        mensagemDebug("Pressionado botão B"); 
+        mensagemDebug(F("Press  botão B")); 
         enderecoEepromGravacao = 128;
         iniciaGravacaoProgramaRAM();
       } else if(ultimoValorBotoes < 894) {
         //botão C
-        mensagemDebug("Pressionado botão C"); 
+        mensagemDebug(F("Press  botão C")); 
         enderecoEepromGravacao = 256;
         iniciaGravacaoProgramaRAM();
       } else if(ultimoValorBotoes < 977) {
         //botão D
-        mensagemDebug("Pressionado botão D"); 
+        mensagemDebug(F("Press  botão D")); 
         enderecoEepromGravacao = 384;
         iniciaGravacaoProgramaRAM();
       } else {
         //botão E
-        mensagemDebug("Pressionado botão E"); 
+        mensagemDebug(F("Press  botão E")); 
         //enderecoEepromGravacao = 512;
         //iniciaGravacaoProgramaRAM();
         debugEeprom();
@@ -342,7 +342,7 @@ void leBotao() {
 }
 
 void carregaProgramadaEeprom(int enderecoInicial) {
-  mensagemDebug("Carregando programa da EEPROM");
+  mensagemDebug(F("Carregando programa da EEPROM"));
   for(int i=enderecoInicial;i<enderecoInicial+64;i++){
     programa[i] = EEPROM.read(i);
     parametros[i] = EEPROM.read(i+64);
@@ -354,7 +354,7 @@ void carregaProgramadaEeprom(int enderecoInicial) {
 
 void gravaProgramaNaEeprom(int enderecoInicial) {
   debugRam();
-  mensagemDebug("Salvando programa para EEPROM");
+  mensagemDebug(F("Salvando programa para EEPROM"));
   for(int i=0;i<64;i++){
     EEPROM.write(i+enderecoInicial, programa[i]);
     EEPROM.write(i+64+enderecoInicial, parametros[i]);
@@ -363,7 +363,7 @@ void gravaProgramaNaEeprom(int enderecoInicial) {
     //if(cmd==2) break;
   }
   somGravando();
-  Serial.println("Gravado!");
+  mensagemDebug(F("Gravado!"));
 }
 
 void apagaEeprom() {
@@ -377,11 +377,11 @@ void apagaEeprom() {
     EEPROM.write(i, 2);
   }
   somAfirmativo();
-  Serial.println("Apagado!");
+  mensagemDebug(F("Apagado!"));
 }
 
 void debugEeprom() {
-  mensagemDebug("Dump da EEPROM para Debug:");
+  mensagemDebug(F("Dump EEPROM p Debug:"));
   for(int i=0;i<1024;i++){
     if(i%128==0) Serial.println("- - - - - -");
     Serial.print(i);
@@ -392,7 +392,7 @@ void debugEeprom() {
 }
 
 void debugRam() {
-  mensagemDebug("Dump da RAM para Debug:");
+  mensagemDebug(F("Dump RAM p Debug:"));
   for(int i=0;i<64;i++){
     Serial.print(i);
     Serial.print("->");
@@ -445,7 +445,7 @@ void leRfid() {
       gravaInstrucao(instrucao,parametro);
     } 
   }
-  tempMsg  = "leRfid() ";
+  tempMsg  = F("leRfid() ");
   tempMsg.concat(instrucao);
   tempMsg.concat(":");
   tempMsg.concat(parametro);
@@ -453,7 +453,7 @@ void leRfid() {
 }
 
 void iniciaGravacaoProgramaRAM() {
-  mensagemDebug("iniciaGravacaoProgramaRAM() Gravando peças na memória...");
+  mensagemDebug(F("Gravando peças na memória..."));
   somGravando();
   passosCaminhar=2000; //inicia a caminhada do robô buscando peças
   myservo.write(canetaAcima);
@@ -467,7 +467,7 @@ void iniciaGravacaoProgramaRAM() {
 }
 
 void gravaInstrucao(int instrucao,int parametro){
-  mensagemDebug("gravaInstrucao() +1 peça no programa...");
+  mensagemDebug(F("grava +1 peça no programa..."));
   //A cada nova instrução de gravação, aumenta a distância de movimento de busca do robô.
   passosCaminhar+=1500;
   //Grava a instrução recebida no vetor programa
@@ -484,7 +484,7 @@ void executaPrograma(int ponteiro) {
   digitalWrite(latchPin, HIGH);
   int comando = EEPROM.read(ponteiro);
   int parametro = EEPROM.read(ponteiro + 64);
-  tempMsg  = "executaPrograma() ";
+  tempMsg  = F("executaPrograma() ");
   tempMsg.concat(ponteiro);
   tempMsg.concat("->");
   tempMsg.concat(comando);
@@ -505,7 +505,7 @@ void executaPrograma(int ponteiro) {
       novoParametro = novoParametro + (EEPROM.read(ponteiro+64+i) * potencia(10,j)); //transforma as peças numéricas em um parâmetro novo
       j++;
     }
-    tempMsg  = "executaPrograma() Instrução ";
+    tempMsg  = F("executaPrograma() Instr ");
     tempMsg.concat(ponteiro);
     tempMsg.concat("-> ");
     tempMsg.concat(comando);
@@ -559,11 +559,11 @@ void executaInstrucao(int instrucao,int parametro){
       ponteirosRepetir[repeticaoAninhada] = ponteiro; //array impar que guarda o ponteiro que marca o repetir, afim do código poder voltar à instrução.
       ponteirosRepetir[repeticaoAninhada+3] = parametro; //array par que guarda o contador do for.
       if(true){ 
-        tempMsg  = "Bloco ";
+        tempMsg  = F("Bloco ");
         tempMsg.concat(repeticaoAninhada);
-        tempMsg  = " repetindo ";
+        tempMsg.concat(F(" repetindo "));
         tempMsg.concat(ponteirosRepetir[repeticaoAninhada+3]);
-        tempMsg.concat(" vezes...");
+        tempMsg.concat(F(" vezes..."));
         mensagemDebug(tempMsg);
       }
       break;
@@ -575,28 +575,28 @@ void executaInstrucao(int instrucao,int parametro){
         tempMsg.concat(ponteirosRepetir[repeticaoAninhada+3]);
         mensagemDebug(tempMsg);
       } else {
-        mensagemDebug("Fim do repetir.");
+        mensagemDebug(F("Fim do repetir."));
         repeticaoAninhada--;
       }
       break;
     case 10: //desce caneta
       myservo.write(canetaAbaixo);
-      mensagemDebug("Caneta abaixada.");
+      mensagemDebug(F("Caneta abaixada."));
       break;
     case 11: //sobe caneta
       myservo.write(canetaAcima);
-      mensagemDebug("Caneta levantada.");
+      mensagemDebug(F("Caneta levantada."));
       break;
     case 12: //define global raio
       raio = parametro;
-      tempMsg  = "Raio definido para ";
+      tempMsg  = F("Raio definido para ");
       tempMsg.concat(raio);
       mensagemDebug(tempMsg);
       break;
     case 13: //curva direita
       passosCurva = passosCurva + (parametro * 100);
       caminhando = true;
-      tempMsg  = "Curva a direita por ";
+      tempMsg  = F("Curva a direita por ");
       tempMsg.concat(parametro);
       tempMsg.concat("cm");
       mensagemDebug(tempMsg);
@@ -604,20 +604,20 @@ void executaInstrucao(int instrucao,int parametro){
     case 14: //curva esquerda
       passosCurva = passosCurva + (parametro * 100);
       caminhando = true;
-      tempMsg  = "Curva a esqueda por ";
+      tempMsg  = F("Curva a esqueda por ");
       tempMsg.concat(parametro);
       tempMsg.concat("cm");
       mensagemDebug(tempMsg);
       break;
     default:
-      mensagemDebug("executaInstrucao() peça desconhecida!");
+      mensagemDebug(F("executaInstrucao() peça desconhecida!"));
       erro();
       break;
   }
 }
 
 void fim(){
-  mensagemDebug("fim() Fim de execução.");
+  mensagemDebug(F("Fim de execução."));
   //passo = 50;
   passosCaminhar = 0;
   grausGirar = 0;
@@ -643,7 +643,7 @@ void medeDistancia(){
   //Mede distância na frente do robô com o sensor ultrasom
   distanciaUltrassom = ultrasonic.distanceRead();
   if(distanciaUltrassom < limiteUltrassom){
-    mensagemDebug("Parada por sensor de distância");
+    mensagemDebug(F("Parada por sensor de distância"));
     erro();
     fim();
   }
@@ -654,7 +654,7 @@ void caminhar(){
   if(passosCaminhar!=0){
     //debug
     if(passosCaminhar%100==0){
-      tempMsg  = "Caminhando ";
+      tempMsg  = F("Caminhando ");
       tempMsg.concat(passosCaminhar);
       mensagemDebug(tempMsg); 
     }
@@ -672,14 +672,14 @@ void caminhar(){
   } else if(grausGirar!=0){
     //debug
     if(grausGirar%100==0){
-      tempMsg  = "Girando ";
+      tempMsg  = F("Girando ");
       tempMsg.concat(grausGirar);
       mensagemDebug(tempMsg); 
     }
     girar();
   } else if(passosCurva!=0){
     if(passosCurva%100==0){
-      tempMsg  = "Fazendo a curva ";
+      tempMsg  = F("Fazendo a curva ");
       tempMsg.concat(passosCurva);
       mensagemDebug(tempMsg); 
     }
@@ -843,11 +843,11 @@ void somInicio() {
   delay(50);
   noTone(buzzer);
   digitalWrite(led, LOW);
-  mensagemDebug("Code_Domino robot iniciado!");
+  mensagemDebug(F("Code_Domino robot iniciado!"));
 }
 
 void erro(){
-  mensagemDebug("erro() ERRO!");
+  mensagemDebug(F("ERRO!"));
   tone(buzzer, 391, 800);
   delay(150);
   noTone(buzzer);
@@ -915,7 +915,7 @@ void somGravando() {
 }
 
 int block(int b){ 
-  Serial.print("Lendo RFID bloco ");
+  Serial.print(F("Lendo RFID bloco "));
   Serial.print(b);
   Serial.print(":");
   String c="";
@@ -947,9 +947,9 @@ void mensagemDebug(String mensagem){
   Serial.print(" - ");
   if(caminhando) Serial.print(" <C> ");
   if(executando) {
-    Serial.print(" |E| ");
+    Serial.print(F(" |E| "));
   }  else {
-    Serial.print(" |G| ");
+    Serial.print(F(" |G| "));
   }
   Serial.println(mensagem);
 }
