@@ -1,12 +1,12 @@
-# code_domino's Turrai Robot
-This is the firmware for the code_domino robot, called Turrai. Turrai is a 10 x 10 x 10 cm Arduino Uno compatible robot. 
+# code_domino's for Decabot
+This is the firmware for Decabot robot using code_domino. Decabot is a 10 x 10 x 10 cm Arduino compatible robot. 
 The objective of the project is to deliver a complete educational platform to teach kids between 4 and 99 years to program a robot using domino pieces (virtual or tangible). We are developing four different interaction models, based on the abstraction capabilities of the users in different ages. They are:
 * A basic pictographic domino for young toddlers who don't read, based on RFID. The pieces represent the moving capabilities of the robot;
 * A basic android application where toddlers can draw paths, translate in virtual domino pieces, and upload to the robot.
 * An advanced domino for kids, based on RFID, encompassing not only the movement pieces but complex program commands, as conditionals, functions, variables and parameters.
 * An advanced android application, who replicates the tangible advanced domino and can be uploaded to the robot via Bluetooth. The app also permits to backup codes, share, and consult other codes. 
 
-The robot is composed of: 
+The basic robot is composed of: 
 * Lasercut body in acrylic or MDF 2,5mm;
 * 2 5V step motor 28byj48 with ULN2003 board driver;
 * Hub shield with 74HC595 Shift Register for the motors;
@@ -18,22 +18,23 @@ The robot is composed of:
 * RFID RC-522 sensor connector in shield;
 * Bluetooth HC-05 or HC-06 connector in shield;
 * Extension bus for other modules (line follower, etc.).
-Instructions to build your own Turrai Robot will be found in www.codedomino.org, and in this github project.
+Instructions to build your own Decabot will be found in www.codedomino.org, and in this github project.
 
 ## Getting Started
 
-These instructions will get you a copy of the firmware up and running on your Turrai Robot.
+These instructions will get you a copy of the firmware up and running on your Decabot.
 
 ### Prerequisites
 
 You need the Arduino IDE to upload this firmware to your Arduino based Turrai robot. Also you will need the following libraries:
 * SPI version 1.1.1
-* MFRC522 version 1.3.6
-* Ultrasonic version 2.1.0
+* MFRC522 version 1.4.5
+* Ultrasonic version 3.0.0
 * EEPROM version 2.0.0
-* Servo version 1.1.1
+* Servo version 1.1.5
+* Arduino UniqueID 1.0.9
 
-Off course you need a Turrai complete robot. See www.codedomino.org and www.genioazul.com.br to build or buy your robot.
+Off course you need a Decabot complete robot. See www.codedomino.org to build or buy your robot.
 
 ### Installing
 
@@ -41,7 +42,7 @@ To install, simply use this files inside arduino sketch folder. Don't forget to 
 
 ## Running the basic test
 
-To run the basic code (hello world), simply upload the code to the robot using USB, and press the button A (seccond from riht to left looking the robot frontal). The Turrai robot will draw a 10 x 10 cm suqare, then will position inside of it.
+To run the basic code (hello world), simply upload the code to the robot using USB, and press the button E (second from right to left looking the robot frontal). The Decabot robot will draw a 10 x 10 cm suqare with a circle inside, then will position inside of it.
 
 ### Break down into end to end tests
 
@@ -69,12 +70,15 @@ We use [SemVer](http://semver.org/) for versioning.
 * **Daniel Chagas** - *Initial work* - [PurpleBooth](https://github.com/triwaca)
 * ** Patrick Martins** - RFID reading
 * ** Lucas de Lima** - Hardware and Hub Shield
+* ** Thais Silveira - Accademic research and Presentation
+* ** Arthur Cavalcante - Drawing and Testing
+* ** Leo Costa - Great ideas
 
 See also the list of [contributors](https://github.com/CodeDomino/contributors) who participated in this project.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
 
 ## Acknowledgments
 
