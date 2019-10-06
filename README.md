@@ -84,10 +84,10 @@ See also the list of [contributors](https://github.com/CodeDomino/contributors) 
 
 * **Gênio Azul** - Support with FUNCAP funding
 * **Herbert Rocha** - Great insights on materials and forms
-* **Leo Costa** - Great ideas about animes!
+* **Leo Costa** - Great ideas about animes! - [lbcosta](https://github.com/lbcosta)
 * **Theo Chagas** - The first Decabot owner (Decabot reg. THE0)!
 * **Uirá Porã** - The first who belived the idea!
-* **Leonardo (from PPGIA)** - The first who bought the idea in 2015! - [lbcosta](https://github.com/lbcosta)
+* **Leonardo (from StartUp Weekend and PPGIA)** - The first who bought the idea in 2015!
 * **Everybody from LAPIN Lab**
 * **Vasco Furtado**
 
