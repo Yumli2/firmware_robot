@@ -75,7 +75,7 @@ We use [SemVer](http://semver.org/) for versioning.
 * **Lucas de Lima** - Hardware and Hub Shield
 * **Elizabeth Furtado** - Accademic research
 * **Thais Silveira** - Accademic research and Presentation
-* **Yuri Lima** - Educational Testing - [brasilmaker] (https://github.com/brasilmaker)
+* **Yuri Lima** - Educational Testing - [brasilmaker](https://github.com/brasilmaker)
 * **Arthur Cavalcante** - Drawing and Testing
 
 See also the list of [contributors](https://github.com/CodeDomino/contributors) who participated in this project.
@@ -87,7 +87,7 @@ See also the list of [contributors](https://github.com/CodeDomino/contributors) 
 * **Leo Costa** - Great ideas about animes!
 * **Theo Chagas** - The first Decabot owner (Decabot reg. THE0)!
 * **Uirá Porã** - The first who belived the idea!
-* **Leonardo (from PPGIA)** - The first who bought the idea in 2015! - [lbcosta] (https://github.com/lbcosta)
+* **Leonardo (from PPGIA)** - The first who bought the idea in 2015! - [lbcosta](https://github.com/lbcosta)
 * **Everybody from LAPIN Lab**
 * **Vasco Furtado**
 
