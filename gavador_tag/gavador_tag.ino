@@ -18,7 +18,7 @@
   #include <MFRC522.h>
   
   
-  #define SS_PIN          13
+  #define SS_PIN          10
   #define RST_PIN         9
 
   MFRC522 mfrc522(SS_PIN, RST_PIN);  // Create MFRC522 instance
@@ -27,48 +27,44 @@
   byte buffer[18];  //data transfer buffer (16+2 bytes data+CRC)
   byte size = sizeof(buffer);
 
-  uint8_t pageAddr = 0x02;  //In this example we will write/read 16 bytes (page 6,7,8 and 9).
+  uint8_t pageAddr = 0x06;  //In this example we will write/read 16 bytes (page 6,7,8 and 9).
                             //Ultraligth mem = 16 pages. 4 bytes per page.  
                             //Pages 0 to 4 are for special functions.           
   
 void setup() {
   Serial.begin(9600); // Initialize serial communications with the PC
-  while (!Serial);
   SPI.begin(); // Init SPI bus
   mfrc522.PCD_Init(); // Init MFRC522 card  
   Serial.println(F("Sketch has been started!"));
-  memcpy(buffer,"2   0000",16);
+  memcpy(buffer,"20  0000",8);
   //frente "4   0000"
-  // numerico "00005   "
+  // numerico "0   5   "
   // direita "5   0000"
   //esquerda "6   0000"
   //fim    "2   0000"
   //inicio "1   0000"
   //repete "8   0000"
   //fimrepete "9   0000"
-  //descecaneta "10  0000"
-  //subircaneta "11  0000"
+  //executa D "21  0000"
+  //executa E "22  0000"
+  //executa C "23  0000"
+  //executa A "24  0000"
+  //executa N "25  0000"
 }
 
 void loop() {
-
-  // Prepare key - all keys are set to FFFFFFFFFFFFh at chip delivery from the factory.
-  MFRC522::MIFARE_Key key;
-  for (byte i = 0; i < 6; i++) key.keyByte[i] = 0xFF;
-  
   // Look for new cards
   if ( ! mfrc522.PICC_IsNewCardPresent())
     return;
-  Serial.println("new card");
 
   // Select one of the cards
   if ( ! mfrc522.PICC_ReadCardSerial())
     return;
-  Serial.println("read card");
+
   // Write data ***********************************************
-  for (int i=0; i < 10; i++) {
+  for (int i=0; i < 2; i++) {
     //data is writen in blocks of 4 bytes (4 bytes per page)
-    status = (MFRC522::StatusCode) mfrc522.MIFARE_Ultralight_Write(pageAddr+i, &buffer[i], 4);
+    status = (MFRC522::StatusCode) mfrc522.MIFARE_Ultralight_Write(pageAddr+i, &buffer[i*4], 4);
     if (status != MFRC522::STATUS_OK) {
       Serial.print(F("MIFARE_Read() failed: "));
       Serial.println(mfrc522.GetStatusCodeName(status));
