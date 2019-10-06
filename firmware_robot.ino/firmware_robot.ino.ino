@@ -353,7 +353,7 @@ void leBotao() {
         enderecoEepromGravacao = 384;
         iniciaGravacaoProgramaRAM();
       } else {
-        //botão Pyay
+        //botão Play
         mensagemDebug(F("Press  botão D")); 
         //enderecoEepromGravacao = 512;
         //iniciaGravacaoProgramaRAM();
@@ -364,7 +364,7 @@ void leBotao() {
 }
 
 void calibracao() {
-  mensagemDebug(F("Carregando código de calibração"));
+  mensagemDebug(F("Carregando código de desenho de calibração"));
   for(int i=0;i<sizeof(calibProg)/sizeof(int);i++){
     programa[i] = calibProg[i];
     parametros[i] = calibParam[i];
@@ -504,7 +504,7 @@ void leRfid() {
 }
 
 void iniciaGravacaoProgramaRAM() {
-  mensagemDebug(F("Gravando peças na memória..."));
+  mensagemDebug(F("Gravando peças na memória RAM..."));
   somGravando();
   passosCaminhar=2000; //inicia a caminhada do robô buscando peças
   myservo.write(canetaAcima);
@@ -588,8 +588,14 @@ void executaInstrucao(int instrucao,int parametro){
       iniciaGravacaoProgramaRAM(); //Se a tag for gravar programa, inicia a gravação.
       break;
     case 2:
-      somFimExecucao();
-      fim(); //Se a tag for parar, para o movimento e a gravação.
+      if(ponteirosRepetir[repeticaoAninhada+3]==0){
+        somFimExecucao();
+        fim(); //Se a tag for parar, para o movimento e a gravação.
+      } else {
+        ponteirosRepetir[repeticaoAninhada+3]--; 
+        ponteiro = ponteirosRepetir[repeticaoAninhada];
+        mensagemDebug(F("Voltando para a execução anterior..."));
+      }
       break;
     case 3:
       somAfirmativo();
@@ -675,6 +681,25 @@ void executaInstrucao(int instrucao,int parametro){
       break;
     case 16: //your name
       yourNameIs(parametro);
+      break;
+    case 20:
+      delay(parametro * 1000);
+      break;
+    case 21: //executa bloco de memória 1 (play)
+      repeticaoAninhada++;
+      ponteirosRepetir[repeticaoAninhada] = ponteiro; //array impar que guarda o ponteiro que marca o repetir, afim do código poder voltar à instrução.
+      ponteirosRepetir[repeticaoAninhada+3] = 1; //array par que guarda o contador do for.
+      ponteiro = 512;
+      executando = true;
+      executaPrograma(ponteiro);
+      break;
+    case 22: //executa bloco de memória 2 (botão E)
+      break;
+    case 23: //executa bloco de memória 3 (botão C)
+      break;
+    case 24: //executa bloco de memória 4 (botão A)
+      break;
+    case 25: //executa bloco de memória 5 (botão N)
       break;
     default:
       mensagemDebug(F("executaInstrucao() peça desconhecida!"));
@@ -1031,12 +1056,15 @@ int stringToInt(String minhaString) { //recebe uma string e transforma em inteir
 
 void mensagemDebug(String mensagem){
   Serial.print(millisAtual);
+  for(int i=0; i<repeticaoAninhada;i++){
+    Serial.print(F("\t"));
+  }
   Serial.print(" - ");
-  if(caminhando) Serial.print(" <C> ");
+  if(caminhando) Serial.print("<C> ");
   if(executando) {
-    Serial.print(F(" |E| "));
+    Serial.print(F("|E| "));
   }  else {
-    Serial.print(F(" |G| "));
+    Serial.print(F("|G| "));
   }
   Serial.println(mensagem);
 }
