@@ -67,14 +67,29 @@ We use [SemVer](http://semver.org/) for versioning.
 
 ## Authors
 
-* **Daniel Chagas** - *Initial work* - [PurpleBooth](https://github.com/triwaca)
-* ** Patrick Martins** - RFID reading
-* ** Lucas de Lima** - Hardware and Hub Shield
-* ** Thais Silveira - Accademic research and Presentation
-* ** Arthur Cavalcante - Drawing and Testing
-* ** Leo Costa - Great ideas
+* **Daniel Chagas** - *Concept, Hardware, Design, Mechanics, Firmware development, App development* - [PurpleBooth](https://github.com/triwaca)
+
+## Main Contributors
+
+* **Patrick Martins** - RFID reading
+* **Lucas de Lima** - Hardware and Hub Shield
+* **Elizabeth Furtado** - Accademic research
+* **Thais Silveira** - Accademic research and Presentation
+* **Yuri Matos** - Educational Testing
+* **Arthur Cavalcante** - Drawing and Testing
 
 See also the list of [contributors](https://github.com/CodeDomino/contributors) who participated in this project.
+
+## Thanks
+
+* **Gênio Azul** - Support with FUNCAP funding
+* **Herbert Rocha** - Great insights on materials and forms
+* **Leo Costa** - Great ideas about animes!
+* **Theo Chagas** - The first Decabot owner (Decabot reg. THE0)!
+* **Uirá Porã** - The first who belived the idea!
+* **Leonardo (from PPGIA)** - The first who bought the idea in 2015!
+* **Everybody from LAPIN Lab**
+* **Vasco Furtado**
 
 ## License
 
@@ -82,5 +97,5 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ## Acknowledgments
 
-* This project received funds from Funcap - Fundação Cearense de Apoio ao Desenvolvimento Científico e Tecnológico - Edital Inovafir II 2017.
+* This project received funds from Funcap - Fundação Cearense de Apoio ao Desenvolvimento Científico e Tecnológico - Edital Inovafit II 2017.
 * This projetc received support from Fundação Edson Queiroz  - Diretoria de Pesquisa, Desenvolvimento e Inovação - Universidade de Fortaleza.
