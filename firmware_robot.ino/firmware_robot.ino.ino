@@ -68,6 +68,9 @@
 #include <EEPROM.h>
 #include <Servo.h>
 #include <ArduinoUniqueID.h>
+#include "U8glib.h"
+
+U8GLIB_SH1106_128X64 u8g(U8G_I2C_OPT_NO_ACK);  // Display which does not send ACK
 
 //pinos da shield
 int servo = 16;
@@ -139,7 +142,10 @@ int canetaAcima = 65;
 int canetaAbaixo = 100;
 String entradaString = "";         // String para receber dados seriais
 boolean stringCompleta = false;  // marca se a string está completa
-boolean rfidAlwaysOn = false; //define se o RFID estará funcinando ao executar códigos
+boolean rfidAlwaysOn = true; //define se o RFID estará funcinando ao executar códigos
+boolean gyroPresent = true; //define se o giroscópio está presente
+boolean ultrasoundPresent = true; //define se o sensor de distância ultrassonico está presente
+boolean oledPresent = true; //define se o a tela OLED I2C está presente
 boolean invertLeftMotor = false;
 boolean invertRightMotor = false;
 boolean ledPlay = false;
@@ -151,9 +157,82 @@ boolean ledRec = false;
 int leds;
 char decabotName[5] = "A01  ";                     //<<<--- put your robot name here!
 char decabotOwner[50] = "anybody@decabot.com";     //<<<--- put your e-mail here!
+char term1[25] = "> l1"; //variáveis do terminal OLED
+char term2[25] = "> l2";
+char term3[25] = "> l3";
+char term4[25] = "> l4";
+char term5[25] = "> l5";
+
+
+
+//imagens para OLED
+const uint8_t decano_logo[] PROGMEM = {
+0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3F, 0xFE, 0xF0,
+0x00, 0x07, 0xFF, 0x80, 0x0F, 0xFC, 0x00, 0x04, 0x00, 0x06, 0x01, 0x80, 0x3F, 0xFE, 0x3C, 0x00,
+0x07, 0xFF, 0x80, 0x1F, 0xFC, 0x00, 0x0E, 0x00, 0x07, 0x01, 0x80, 0x3E, 0x3E, 0x0F, 0x00, 0x00,
+0x00, 0x00, 0x38, 0x00, 0x00, 0x0E, 0x00, 0x07, 0x81, 0x80, 0x38, 0x0E, 0x83, 0xC0, 0x00, 0x00,
+0x00, 0x30, 0x00, 0x00, 0x1F, 0x00, 0x07, 0xC1, 0x80, 0x38, 0x0E, 0xC1, 0xE0, 0x07, 0xFF, 0x80,
+0x30, 0x00, 0x00, 0x3B, 0x80, 0x06, 0xE1, 0x80, 0x30, 0x06, 0xC3, 0xC0, 0x07, 0xFF, 0x80, 0x30,
+0x00, 0x00, 0x3B, 0x80, 0x06, 0x71, 0x80, 0x30, 0x06, 0xCF, 0x00, 0x00, 0x00, 0x00, 0x30, 0x00,
+0x00, 0x71, 0xC0, 0x06, 0x39, 0x80, 0x38, 0x0E, 0xFC, 0x00, 0x00, 0x00, 0x00, 0x38, 0x00, 0x00,
+0xE4, 0xE0, 0x06, 0x1D, 0x80, 0x38, 0x0E, 0xF0, 0x00, 0x07, 0xFF, 0x80, 0x1F, 0xFC, 0x00, 0xEE,
+0xE0, 0x06, 0x0F, 0x80, 0x3E, 0x3E, 0xC0, 0x00, 0x07, 0xFF, 0x80, 0x0F, 0xFC, 0x01, 0xC4, 0x70,
+0x06, 0x07, 0x80, 0x3F, 0xFE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x3F, 0xFE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0xF8, 0x00, 0x3E, 0x00, 0x3E, 0x00, 0x0F, 0x80, 0x0F, 0xE0, 0x08, 0x00, 0x7C, 0x00,
+0x7E, 0x84, 0x00, 0x41, 0x00, 0x21, 0x00, 0x10, 0x40, 0x01, 0x00, 0x08, 0x00, 0x82, 0x00, 0x80,
+0x84, 0x00, 0x41, 0x00, 0x3F, 0x00, 0x10, 0x40, 0x01, 0x00, 0x08, 0x00, 0x80, 0x00, 0x7C, 0xF8,
+0x00, 0x41, 0x00, 0x20, 0x80, 0x10, 0x40, 0x01, 0x00, 0x08, 0x00, 0x80, 0x00, 0x02, 0x84, 0x00,
+0x41, 0x00, 0x20, 0x80, 0x10, 0x40, 0x01, 0x00, 0x08, 0x00, 0x82, 0x00, 0x82, 0x84, 0x00, 0x3E,
+0x00, 0x3F, 0x00, 0x0F, 0x80, 0x01, 0x00, 0x08, 0x00, 0x7C, 0x00, 0x7C, 
+};  //15 20
+
+const uint8_t bat_4 [] PROGMEM = {
+0x00, 0x00, 0x3F, 0xFE, 0x40, 0x01, 0x5B, 0x6D, 0xDB, 0x6D, 0xDB, 0x6D, 0xDB, 0x6D, 0x5B, 0x6D,
+0x40, 0x01, 0x3F, 0xFE, 0x00, 0x00, 
+}; //2 11
+
+const uint8_t decabot_icon [] PROGMEM = {
+0xFF, 0x80, 0x80, 0x80, 0xBE, 0x80, 0xFF, 0x80, 0xEB, 0x80, 0xBE, 0x80, 0x80, 0x80, 0xFF, 0x80,
+0xC1, 0x80, 
+};  //2,9
+
+const uint8_t decano_small_logo [] PROGMEM = {
+0xC3, 0xE7, 0x88, 0x8B, 0xE0, 0x30, 0x08, 0x14, 0xCB, 0x60, 0x8B, 0xE8, 0x14, 0xAA, 0x20, 0xB0,
+0x08, 0x22, 0x9B, 0x60, 0xC3, 0xE7, 0xAA, 0x8B, 0xE0, 
+}; //5 5
+
+const uint8_t gyro_icon [] PROGMEM = {
+0x04, 0x00, 0x0A, 0x00, 0x0A, 0x00, 0x1B, 0x00, 0x68, 0xC0, 0x88, 0x20, 0x61, 0xC0, 0x1F, 0x00,
+0x0A, 0x00, 0x0A, 0x00, 0x04, 0x00, 
+}; //2 11
+
+const uint8_t rec_icon [] PROGMEM = {
+0x00, 0x00, 0x00, 0x7F, 0xFF, 0xF8, 0xFF, 0xFF, 0xBC, 0xFF, 0xFE, 0x0C, 0x98, 0xCE, 0x0C, 0x99,
+0xBC, 0x04, 0xA8, 0xCE, 0x0C, 0xFF, 0xFE, 0x0C, 0xFF, 0xFF, 0xBC, 0x7F, 0xFF, 0xF8, 0x00, 0x00,
+0x00,  
+}; //3 11
+
+const uint8_t rfid_icon [] PROGMEM = {
+0x00, 0x00, 0x00, 0x00, 0x00, 0x1C, 0x00, 0x02, 0x00, 0x19, 0x00, 0x05, 0xCE, 0xB5, 0xCC, 0xA8,
+0xA8, 0xB0, 0x00, 0x00, 0x00, 0x00, 
+}; //2 11
+
+const uint8_t ultrasound_icon [] PROGMEM = {
+0x00, 0x00, 0x01, 0x00, 0x04, 0x80, 0x12, 0x80, 0x4A, 0x40, 0xEA, 0x40, 0x4A, 0x40, 0x12, 0x80,
+0x04, 0x80, 0x01, 0x00, 0x00, 0x00,  
+}; //2 11
 
 void setup() {
   Serial.begin(9600);
+  Serial.println(F("DECANO Robotics"));
+  if(oledPresent){
+    u8g.firstPage();  
+    do {
+      u8g.drawBitmapP( 4, 22, 15, 20, decano_logo);
+    } while( u8g.nextPage() );
+  }
   entradaString.reserve(200);
   myservo.attach(servo);
   myservo.write(canetaAcima);
@@ -173,6 +252,9 @@ void setup() {
   somInicio();
   whoami();
   digitalWrite(led, HIGH);
+  u8g.setFont(u8g_font_5x7);
+  u8g.firstPage();  
+  mensagemDebug(F("Boot OK!"));
 }
 
 void loop() {
@@ -198,10 +280,10 @@ void loop() {
   if(millisAtual%1000==0){
     //De um em um segundo lê o RFID e mede a distância
     if(!executando||rfidAlwaysOn){
-      mensagemDebug(F("Lendo RFID..."));
+      //mensagemDebug(F("Lendo RFID..."));
       leRfid();
     }
-    medeDistancia();
+    if(ultrasoundPresent) medeDistancia();
   }
   if((millisAtual%3000==0)&&!executando&&caminhando){
     bipeFino(); //emite um bipe fino de 3 em 3 segundos informando que está gravando peças na memória
@@ -240,16 +322,17 @@ void serialEvent() {
 
 void whoami() {
   UniqueIDdump(Serial);
-  Serial.print(F("Decabot Name: "));
+  String tmp1 = F("Decabot Name: ");
   for(int i=896;i<=900;i++){
-    Serial.print((char) EEPROM.read(i));
+    tmp1.concat((char) EEPROM.read(i));
+    decabotName[i - 896] = EEPROM.read(i);
   }
-  Serial.println();
-  Serial.print(F("Decabot Owner: "));
+  mensagemDebug(tmp1);
+  String tmp2 = F("Own:");
   for(int i=901;i<950;i++){
-    Serial.print((char) EEPROM.read(i));
+    tmp2.concat((char) EEPROM.read(i));
   }
-  Serial.println();
+  mensagemDebug(tmp2);
 }
 
 void leBotao() {
@@ -270,12 +353,11 @@ void leBotao() {
     digitalWrite(led, LOW);
     long timerAtual = millis();
     if(timerBotao + timerLongoPressionar > timerAtual){
-      mensagemDebug(F("Toque curto"));
       //Serial.println(timerBotao);
       //Serial.println(valorBotao);
       if(ultimoValorBotoes<709) {
         //botão grava/para
-        mensagemDebug(F("Press  botão gravar/parar no toque curto")); 
+        mensagemDebug(F("botao REC")); 
         ledRec = true;
         if(executando) {
           erro();
@@ -285,7 +367,7 @@ void leBotao() {
         }
       } else if(ultimoValorBotoes < 761) {
         //botão A
-        mensagemDebug(F("Press  botão N"));
+        mensagemDebug(F("executar N"));
         ledN = true;
         //carregaProgramadaEeprom(0);
         ponteiro = 0;
@@ -293,7 +375,7 @@ void leBotao() {
         executaPrograma(ponteiro);
       } else if(ultimoValorBotoes < 822) {
         //botão B
-        mensagemDebug(F("Press  botão A")); 
+        mensagemDebug(F("executar A")); 
         ledA = true;
         //carregaProgramadaEeprom(128); //está resetando o arduino
         ponteiro = 128;
@@ -301,7 +383,7 @@ void leBotao() {
         executaPrograma(ponteiro);
       } else if(ultimoValorBotoes < 894) {
         //botão C
-        mensagemDebug(F("Press  botão C")); 
+        mensagemDebug(F("executar C")); 
         ledC = true;
         //carregaProgramadaEeprom(256);
         ponteiro = 256;
@@ -309,7 +391,7 @@ void leBotao() {
         executaPrograma(ponteiro);
       } else if(ultimoValorBotoes < 977) {
         //botão D
-        mensagemDebug(F("Press  botão E")); 
+        mensagemDebug(F("executar E")); 
         ledE = true;
         //carregaProgramadaEeprom(384);
         ponteiro = 384;
@@ -317,7 +399,7 @@ void leBotao() {
         executaPrograma(ponteiro);
       } else {
         //botão E
-        mensagemDebug(F("Press  botão Play")); 
+        mensagemDebug(F("botao PLAY")); 
         ledPlay = true;
         //carregaProgramadaEeprom(512); //está resetando o arduino
         ponteiro = 512;
@@ -325,36 +407,35 @@ void leBotao() {
         executaPrograma(ponteiro);
       }
     } else {
-      mensagemDebug(F("Toque longo"));
       if(ultimoValorBotoes<709) {
         //botão grava/para
-        mensagemDebug(F("Press  botão gravar/parar no toque longo")); 
+        mensagemDebug(F("botao FORMATAR")); 
         //enderecoEepromGravacao = 0;
         //iniciaGravacaoProgramaRAM();
         apagaEeprom();
       } else if(ultimoValorBotoes < 761) {
         //botão N
-        mensagemDebug(F("Press  botão N")); 
+        mensagemDebug(F("gravar em N")); 
         enderecoEepromGravacao = 0;
         iniciaGravacaoProgramaRAM();
       } else if(ultimoValorBotoes < 822) {
         //botão A
-        mensagemDebug(F("Press  botão A")); 
+        mensagemDebug(F("gravar em A")); 
         enderecoEepromGravacao = 128;
         iniciaGravacaoProgramaRAM();
       } else if(ultimoValorBotoes < 894) {
         //botão C
-        mensagemDebug(F("Press  botão C")); 
+        mensagemDebug(F("gravar em C")); 
         enderecoEepromGravacao = 256;
         iniciaGravacaoProgramaRAM();
       } else if(ultimoValorBotoes < 977) {
         //botão E
-        mensagemDebug(F("Press  botão E")); 
+        mensagemDebug(F("gravar em E")); 
         enderecoEepromGravacao = 384;
         iniciaGravacaoProgramaRAM();
       } else {
         //botão Play
-        mensagemDebug(F("Press  botão D")); 
+        mensagemDebug(F("gravar em D")); 
         //enderecoEepromGravacao = 512;
         //iniciaGravacaoProgramaRAM();
         debugEeprom();
@@ -364,18 +445,18 @@ void leBotao() {
 }
 
 void calibracao() {
-  mensagemDebug(F("Carregando código de desenho de calibração"));
+  mensagemDebug(F("carregando Hello World"));
   for(int i=0;i<sizeof(calibProg)/sizeof(int);i++){
     programa[i] = calibProg[i];
     parametros[i] = calibParam[i];
     Serial.print(i);
     Serial.print("-");
   }
-  Serial.println(F(" comandos de calibração carregados no bloco E!"));
+  mensagemDebug(F("Hello World na mem E"));
 }
 
 void carregaProgramadaEeprom(int enderecoInicial) {
-  mensagemDebug(F("Carregando programa da EEPROM"));
+  mensagemDebug(F("lendo prog EEPROM"));
   for(int i=enderecoInicial;i<enderecoInicial+64;i++){
     programa[i] = EEPROM.read(i);
     parametros[i] = EEPROM.read(i+64);
@@ -386,7 +467,7 @@ void carregaProgramadaEeprom(int enderecoInicial) {
 }
 
 void gravaProgramaNaEeprom(int enderecoInicial) {
-  mensagemDebug(F("Salvando programa para EEPROM"));
+  mensagemDebug(F("salvando prog EEPROM"));
   for(int i=0;i<64;i++){
     EEPROM.write(i+enderecoInicial, programa[i]);
     EEPROM.write(i+64+enderecoInicial, parametros[i]);
@@ -403,6 +484,7 @@ void apagaEeprom() {
   //apaga EEPROM
   //espera 5 segundos até confirmar
   Serial.println(F("memória EEPROM será apagada em 5 segundos! Desligue a alimentação para cancelar!"));
+  mensagemDebug(F("5 seg p apagar EEPROM"));
   for(int i=0;i<30;i++){
     if(i<20){
       tone(buzzer, 494, 50);
@@ -415,7 +497,7 @@ void apagaEeprom() {
       noTone(buzzer);
       delay(100);
     }
-    if(i%5==0) Serial.print(F("..."));
+    if(i%5==0) mensagemDebug(F("..."));
   }
   somGravando();
   mensagemDebug(F("Apagando EEPROM"));
@@ -504,7 +586,7 @@ void leRfid() {
 }
 
 void iniciaGravacaoProgramaRAM() {
-  mensagemDebug(F("Gravando peças na memória RAM..."));
+  mensagemDebug(F("Salvando prog na RAM"));
   somGravando();
   passosCaminhar=2000; //inicia a caminhada do robô buscando peças
   myservo.write(canetaAcima);
@@ -549,7 +631,7 @@ void executaPrograma(int ponteiro) {
       novoParametro = novoParametro + (EEPROM.read(ponteiro+64+i) * potencia(10,j)); //transforma as peças numéricas em um parâmetro novo
       j++;
     }
-    tempMsg  = F("executaPrograma() EEPROM ");
+    tempMsg  = F("run EEPROM ");
     tempMsg.concat(ponteiro);
     tempMsg.concat("-> ");
     tempMsg.concat(comando);
@@ -594,7 +676,7 @@ void executaInstrucao(int instrucao,int parametro){
       } else {
         ponteirosRepetir[repeticaoAninhada+3]--; 
         ponteiro = ponteirosRepetir[repeticaoAninhada];
-        mensagemDebug(F("Voltando para a execução anterior..."));
+        mensagemDebug(F("back to child prog"));
       }
       break;
     case 3:
@@ -625,11 +707,11 @@ void executaInstrucao(int instrucao,int parametro){
       ponteirosRepetir[repeticaoAninhada] = ponteiro; //array impar que guarda o ponteiro que marca o repetir, afim do código poder voltar à instrução.
       ponteirosRepetir[repeticaoAninhada+3] = parametro; //array par que guarda o contador do for.
       if(true){ 
-        tempMsg  = F("Bloco ");
+        tempMsg  = F("Bl ");
         tempMsg.concat(repeticaoAninhada);
-        tempMsg.concat(F(" repetindo "));
+        tempMsg.concat(F(" loop "));
         tempMsg.concat(ponteirosRepetir[repeticaoAninhada+3]);
-        tempMsg.concat(F(" vezes..."));
+        tempMsg.concat(F("x"));
         mensagemDebug(tempMsg);
       }
       break;
@@ -637,11 +719,11 @@ void executaInstrucao(int instrucao,int parametro){
       ponteirosRepetir[repeticaoAninhada+3]--;
       if(ponteirosRepetir[repeticaoAninhada+3]>0){ 
         ponteiro = ponteirosRepetir[repeticaoAninhada];
-        tempMsg  = "Repetição nº ";
+        tempMsg  = "Loop ";
         tempMsg.concat(ponteirosRepetir[repeticaoAninhada+3]);
         mensagemDebug(tempMsg);
       } else {
-        mensagemDebug(F("Fim do repetir."));
+        mensagemDebug(F("End of loop."));
         repeticaoAninhada--;
       }
       break;
@@ -655,7 +737,7 @@ void executaInstrucao(int instrucao,int parametro){
       break;
     case 12: //define global raio
       raio = parametro;
-      tempMsg  = F("Raio definido para ");
+      tempMsg  = F("Raio definido p ");
       tempMsg.concat(raio);
       mensagemDebug(tempMsg);
       break;
@@ -680,9 +762,13 @@ void executaInstrucao(int instrucao,int parametro){
       mensagemDebug(tempMsg);
       break;
     case 16: //your name
-      yourNameIs(parametro);
+      //yourNameIs(parametro);
       break;
     case 20:
+      tempMsg  = F("pausado por ");
+      tempMsg.concat(parametro);
+      tempMsg.concat("s...");
+      mensagemDebug(tempMsg);
       delay(parametro * 1000);
       break;
     case 21: //executa bloco de memória 1 (play)
@@ -702,14 +788,14 @@ void executaInstrucao(int instrucao,int parametro){
     case 25: //executa bloco de memória 5 (botão N)
       break;
     default:
-      mensagemDebug(F("executaInstrucao() peça desconhecida!"));
+      mensagemDebug(F("comando desconhecido"));
       erro();
       break;
   }
 }
 
 void fim(){
-  mensagemDebug(F("Fim de execução."));
+  mensagemDebug(F("Fim de execucao."));
   //passo = 50;
   passosCaminhar = 0;
   grausGirar = 0;
@@ -738,7 +824,7 @@ void yourNameIs(String parametro){
     EEPROM.write(i + 896,decabotName[i]);
   }
   mensagemDebug(F("mudado nome para "));
-  Serial.println(decabotName);
+  mensagemDebug(decabotName);
 }
 
 void yourOwnerIs(String parametro){
@@ -748,7 +834,7 @@ void yourOwnerIs(String parametro){
     EEPROM.write(i + 902,decabotOwner[i]);
   }
   mensagemDebug(F("Decabot owner: "));
-  Serial.println(decabotOwner);
+  mensagemDebug(decabotOwner);
 }
 
 void medeDistancia(){
@@ -955,7 +1041,6 @@ void somInicio() {
   delay(50);
   noTone(buzzer);
   digitalWrite(led, LOW);
-  mensagemDebug(F("Code_Domino robot iniciado!"));
 }
 
 void erro(){
@@ -1055,6 +1140,7 @@ int stringToInt(String minhaString) { //recebe uma string e transforma em inteir
 }
 
 void mensagemDebug(String mensagem){
+  /*
   Serial.print(millisAtual);
   for(int i=0; i<repeticaoAninhada;i++){
     Serial.print(F("\t"));
@@ -1067,6 +1153,41 @@ void mensagemDebug(String mensagem){
     Serial.print(F("|G| "));
   }
   Serial.println(mensagem);
+  */
+  String msg = "";
+  msg.concat(String(millis()/1000.0,2));
+  msg.concat(">");
+  msg.concat(mensagem);
+  Serial.println(msg);
+  if(oledPresent){
+    u8g.firstPage(); 
+    strcpy(term1, term2); 
+    strcpy(term2, term3);
+    strcpy(term3, term4);
+    strcpy(term4, term5);
+    msg.toCharArray(term5, 24);
+    do {
+      u8g.drawBitmapP( 0, 0, 2, 9, decabot_icon);
+      u8g.setPrintPos(12,8);
+      u8g.print(String(decabotName).substring(0,4));
+      if(ultrasoundPresent) u8g.drawBitmapP( 63, 0, 2, 11, ultrasound_icon);
+      if(rfidAlwaysOn) u8g.drawBitmapP( 77, 0, 2, 11, rfid_icon);
+      if(gyroPresent) u8g.drawBitmapP( 96, 0, 2, 11, gyro_icon);
+      u8g.drawBitmapP( 110, 0, 2, 11, bat_4);
+      u8g.drawBitmapP( 46, 59, 5, 5, decano_small_logo);
+      u8g.setPrintPos(0,18);
+      u8g.print(term1);
+      u8g.setPrintPos(0,28);
+      u8g.print(term2);
+      u8g.setPrintPos(0,38);
+      u8g.print(term3);
+      u8g.setPrintPos(0,48);
+      u8g.print(term4);
+      u8g.setPrintPos(0,58);
+      u8g.print(term5);
+    } while( u8g.nextPage() );
+  }
+  
 }
 
 int potencia(int base, int expoente){
