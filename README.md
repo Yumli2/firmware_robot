@@ -75,7 +75,7 @@ We use [SemVer](http://semver.org/) for versioning.
 * **Lucas de Lima** - Hardware and Hub Shield
 * **Elizabeth Furtado** - Accademic research
 * **Thais Silveira** - Accademic research and Presentation
-* **Yuri Lima** - Educational Testing - [brasilmaker](https://github.com/brasilmaker)
+* **Yuri Lima** - Educational Testing and Upload Code by Bluetooth- [Yuri-Lima](https://github.com/Yuri-Lima)
 * **Arthur Cavalcante** - Drawing and Testing
 
 See also the list of [contributors](https://github.com/CodeDomino/contributors) who participated in this project.
