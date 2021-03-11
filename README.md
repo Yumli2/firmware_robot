@@ -1,4 +1,4 @@
-# code_domino's for Decabot
+# Code_domino's for Decabot
 This is the firmware for Decabot robot using code_domino. Decabot is a 10 x 10 x 10 cm Arduino compatible robot. 
 The objective of the project is to deliver a complete educational platform to teach kids between 4 and 99 years to program a robot using domino pieces (virtual or tangible). We are developing four different interaction models, based on the abstraction capabilities of the users in different ages. They are:
 * A basic pictographic domino for young toddlers who don't read, based on RFID. The pieces represent the moving capabilities of the robot;
